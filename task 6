@@ -1,0 +1,184 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from pathlib import Path
+
+# ----------------------------------------------------------
+# Assume clean_df already exists from previous tasks.
+# Must contain: date, temperature, rainfall, humidity
+# ----------------------------------------------------------
+
+# Create output directory
+output_dir = Path("weather_output")
+output_dir.mkdir(exist_ok=True)
+
+# ----------------------------------------------------------
+# 1) EXPORT CLEANED DATA TO CSV
+# ----------------------------------------------------------
+clean_csv_path = output_dir / "cleaned_weather_data.csv"
+clean_df.to_csv(clean_csv_path, index=False)
+print(f"Cleaned data exported to: {clean_csv_path}")
+
+
+# ----------------------------------------------------------
+# 2) SAVE PLOTS AS PNG IMAGES
+# (Daily temperature, monthly rainfall bar chart,
+#  humidity vs temperature scatter, and a combined figure)
+# ----------------------------------------------------------
+
+# Identify date column
+date_col = [col for col in clean_df.columns if "date" in col.lower()][0]
+
+df = clean_df.copy()
+df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+df = df.dropna(subset=[date_col])
+df = df.set_index(date_col)
+
+
+
+# ---------- Plot 1: Daily Temperature Line Chart ----------
+plt.figure(figsize=(10,5))
+plt.plot(df.index, df["temperature"], label="Temperature")
+plt.title("Daily Temperature Trend")
+plt.xlabel("Date")
+plt.ylabel("Temperature")
+plt.grid(True)
+plt.legend()
+temp_plot = output_dir / "daily_temperature.png"
+plt.savefig(temp_plot, dpi=300, bbox_inches="tight")
+plt.close()
+print(f"Saved: {temp_plot}")
+
+
+
+# ---------- Plot 2: Monthly Rainfall Bar Chart ----------
+monthly_rainfall = df["rainfall"].resample("M").sum()
+
+plt.figure(figsize=(10,5))
+plt.bar(monthly_rainfall.index, monthly_rainfall.values, width=15)
+plt.title("Monthly Rainfall Totals")
+plt.xlabel("Month")
+plt.ylabel("Rainfall (Total)")
+plt.xticks(rotation=45)
+plt.grid(True, axis="y")
+rain_plot = output_dir / "monthly_rainfall.png"
+plt.savefig(rain_plot, dpi=300, bbox_inches="tight")
+plt.close()
+print(f"Saved: {rain_plot}")
+
+
+
+# ---------- Plot 3: Humidity vs Temperature Scatter ----------
+plt.figure(figsize=(8,5))
+plt.scatter(df["temperature"], df["humidity"], alpha=0.7)
+plt.title("Humidity vs Temperature")
+plt.xlabel("Temperature")
+plt.ylabel("Humidity")
+plt.grid(True)
+scatter_plot = output_dir / "humidity_vs_temperature.png"
+plt.savefig(scatter_plot, dpi=300, bbox_inches="tight")
+plt.close()
+print(f"Saved: {scatter_plot}")
+
+
+
+# ---------- Plot 4: Combined Figure ----------
+fig, ax = plt.subplots(1, 2, figsize=(14,5))
+
+# Subplot 1: Temperature trend
+ax[0].plot(df.index, df["temperature"], color="blue")
+ax[0].set_title("Daily Temperature")
+ax[0].set_xlabel("Date")
+ax[0].set_ylabel("Temperature")
+ax[0].grid(True)
+
+# Subplot 2: Humidity scatter
+ax[1].scatter(df["temperature"], df["humidity"], alpha=0.6, color="green")
+ax[1].set_title("Humidity vs Temperature")
+ax[1].set_xlabel("Temperature")
+ax[1].set_ylabel("Humidity")
+ax[1].grid(True)
+
+plt.tight_layout()
+combined_plot = output_dir / "combined_plots.png"
+plt.savefig(combined_plot, dpi=300, bbox_inches="tight")
+plt.close()
+print(f"Saved: {combined_plot}")
+
+
+
+# ----------------------------------------------------------
+# 3) GENERATE A MARKDOWN REPORT
+# ----------------------------------------------------------
+report_path = output_dir / "weather_analysis_report.md"
+
+report_text = f"""
+# Weather Data Analysis Report
+
+## 1. Overview
+This report summarizes the weather patterns found in the dataset after cleaning and analysis.
+The analysis includes:
+- Daily temperature trends  
+- Monthly rainfall patterns  
+- Relationship between humidity and temperature  
+- Seasonal and monthly aggregates  
+
+All outputs are saved in the `weather_output/` folder.
+
+---
+
+## 2. Key Insights
+
+### **Daily Temperature Trends**
+The daily temperature line chart (`daily_temperature.png`) shows:
+- Temperature fluctuations over time  
+- Clear warming or cooling trends depending on the dataset  
+- Possible outliers or unusually hot/cold days  
+
+### **Monthly Rainfall**
+The bar chart (`monthly_rainfall.png`) indicates:
+- Which months experience the highest rainfall  
+- Seasonal rainfall patterns (e.g., monsoon season, dry months)  
+
+### **Humidity vs Temperature Relationship**
+From the scatter plot (`humidity_vs_temperature.png`):
+- Positive correlation: humidity increases with temperature  
+- Negative correlation: humidity decreases on hotter days  
+- Cluster patterns show typical weather behavior  
+
+### **Combined Visualization**
+The combined chart (`combined_plots.png`) illustrates:
+- Side-by-side comparison for temperature trend and humidity relationship  
+- Helps understand how these variables interact over time  
+
+---
+
+## 3. Files Exported
+
+### ✔ Cleaned Data  
+- **cleaned_weather_data.csv**
+
+### ✔ Saved Figures  
+- **daily_temperature.png**  
+- **monthly_rainfall.png**  
+- **humidity_vs_temperature.png**  
+- **combined_plots.png**
+
+### ✔ Report  
+- **weather_analysis_report.md**
+
+---
+
+## 4. Conclusion
+The analytical workflow demonstrates how weather data can be cleaned, processed, visualized, and summarized.
+These insights can be used for:
+- Climate trend analysis  
+- Environmental studies  
+- Predictive modeling and forecasting  
+
+"""
+
+with open(report_path, "w", encoding="utf-8") as f:
+    f.write(report_text)
+
+print(f"\nMarkdown report saved to: {report_path}")
