@@ -1,0 +1,34 @@
+import pandas as pd
+
+# -------------------------------------------------------
+# STEP 1: Provide the path to your downloaded CSV file.
+# Example: "weather_data.csv"
+# -------------------------------------------------------
+csv_path = "weather_data.csv"   # <-- replace with your filename
+
+# -------------------------------------------------------
+# STEP 2: Load CSV into a DataFrame
+# -------------------------------------------------------
+try:
+    df = pd.read_csv(csv_path)
+    print("CSV file loaded successfully!\n")
+except FileNotFoundError:
+    print("Error: CSV file not found. Check the filename/path.")
+    raise
+
+# -------------------------------------------------------
+# STEP 3: Inspect the structure of the dataset
+# -------------------------------------------------------
+
+print("\n====== HEAD (first 5 rows) ======")
+print(df.head())
+
+print("\n====== INFO (column types & non-null counts) ======")
+print(df.info())
+
+print("\n====== DESCRIBE (numeric stats) ======")
+print(df.describe())
+
+# If the dataset has categorical columns, describe them as well
+print("\n====== DESCRIBE (all columns, including categorical) ======")
+print(df.describe(include='all'))
