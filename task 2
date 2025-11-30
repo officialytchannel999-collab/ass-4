@@ -1,0 +1,65 @@
+import pandas as pd
+
+# -------------------------------------------------------
+# Assume df already loaded from Task 1
+# Example (uncomment if you want this cell to run standalone):
+# df = pd.read_csv("weather_data.csv")
+# -------------------------------------------------------
+
+# -------------------------------
+# 1) HANDLE MISSING VALUES
+# -------------------------------
+
+# Option A: Drop rows with too many missing values
+df = df.dropna(thresh=3)   # keep rows with at least 3 non-null values
+
+# Option B: Fill specific columns with appropriate values
+fill_columns = ["temperature", "rainfall", "humidity"]
+
+for col in fill_columns:
+    if col in df.columns:
+        df[col] = df[col].fillna(df[col].median())  # fill with median values
+
+# Alternative:
+# df = df.fillna(method='ffill')   # forward-fill
+# df = df.fillna(method='bfill')   # backward-fill
+
+
+# -------------------------------
+# 2) CONVERT DATE COLUMN TO DATETIME
+# -------------------------------
+# Find the most likely date column automatically
+date_candidates = [c for c in df.columns if "date" in c.lower()]
+
+if date_candidates:
+    date_col = date_candidates[0]
+    print(f"Converting '{date_col}' to datetime...")
+    df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+
+    # Handle rows where date conversion failed
+    df = df.dropna(subset=[date_col])
+else:
+    print("No date column found — please specify manually if needed.")
+
+
+# -------------------------------
+# 3) FILTER FOR RELEVANT COLUMNS
+# -------------------------------
+relevant_cols = [
+    "temperature",
+    "rainfall",
+    "humidity",
+    "wind_speed",
+    date_candidates[0] if date_candidates else None
+]
+
+# Keep only columns that exist in the dataset
+relevant_cols = [c for c in relevant_cols if c in df.columns]
+
+clean_df = df[relevant_cols].copy()
+
+print("\n====== CLEANED DATAFRAME HEAD ======")
+print(clean_df.head())
+
+print("\n====== CLEANED DATAFRAME INFO ======")
+print(clean_df.info())
