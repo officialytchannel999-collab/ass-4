@@ -1,0 +1,84 @@
+import pandas as pd
+import numpy as np
+
+# -------------------------------------------------------
+# Assume clean_df exists from Task 2
+# -------------------------------------------------------
+
+# Identify the date column
+date_col = [c for c in clean_df.columns if "date" in c.lower()][0]
+
+df = clean_df.copy()
+df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+df = df.dropna(subset=[date_col])
+df = df.set_index(date_col)
+
+# -------------------------------------------------------
+# 1) GROUP BY MONTH (using resample)
+# -------------------------------------------------------
+
+monthly_stats = df.resample("M").agg({
+    "temperature": ["mean", "min", "max", "std"],
+    "rainfall": ["sum", "mean", "max"],
+    "humidity": ["mean", "min", "max"]
+})
+
+print("\n========== MONTHLY STATISTICS ==========")
+print(monthly_stats)
+
+
+# -------------------------------------------------------
+# 2) GROUP BY YEAR (using resample)
+# -------------------------------------------------------
+
+yearly_stats = df.resample("Y").agg({
+    "temperature": ["mean", "min", "max"],
+    "rainfall": ["sum", "mean"],
+    "humidity": ["mean", "max"]
+})
+
+print("\n========== YEARLY STATISTICS ==========")
+print(yearly_stats)
+
+
+# -------------------------------------------------------
+# 3) GROUP BY SEASON (custom grouping)
+# -------------------------------------------------------
+
+def get_season(month):
+    """Return season name based on month number."""
+    if month in [12, 1, 2]:
+        return "Winter"
+    elif month in [3, 4, 5]:
+        return "Spring"
+    elif month in [6, 7, 8]:
+        return "Summer"
+    else:
+        return "Autumn"
+
+df["season"] = df.index.month.map(get_season)
+
+season_stats = df.groupby("season").agg({
+    "temperature": ["mean", "min", "max"],
+    "rainfall": ["sum", "mean"],
+    "humidity": ["mean"]
+})
+
+print("\n========== SEASONAL STATISTICS ==========")
+print(season_stats)
+
+
+# -------------------------------------------------------
+# 4) GROUP BY MONTH NAME (Pandas groupby)
+# -------------------------------------------------------
+
+df["month_name"] = df.index.month_name()
+
+monthname_stats = df.groupby("month_name").agg({
+    "temperature": ["mean", "min", "max"],
+    "rainfall": ["sum"],
+    "humidity": ["mean"]
+})
+
+print("\n========== GROUPED BY MONTH NAME ==========")
+print(monthname_stats.sort_index())
