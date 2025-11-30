@@ -1,0 +1,76 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# ------------------------------------------------------------
+# Assume clean_df is already created in Task 2.
+# Must contain: date column, temperature, rainfall, humidity.
+# ------------------------------------------------------------
+
+# Find the date column
+date_col = [c for c in clean_df.columns if "date" in c.lower()][0]
+
+# Ensure datetime index for resampling
+df = clean_df.copy()
+df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+df = df.dropna(subset=[date_col])
+df = df.set_index(date_col)
+
+# ------------------------------------------------------------
+# 1) LINE CHART – Daily Temperature Trend
+# ------------------------------------------------------------
+plt.figure(figsize=(10, 5))
+plt.plot(df.index, df["temperature"], label="Daily Temperature")
+plt.title("Daily Temperature Trend")
+plt.xlabel("Date")
+plt.ylabel("Temperature")
+plt.grid(True)
+plt.legend()
+plt.show()
+
+# ------------------------------------------------------------
+# 2) BAR CHART – Monthly Rainfall Totals
+# ------------------------------------------------------------
+monthly_rainfall = df["rainfall"].resample("M").sum()
+
+plt.figure(figsize=(10, 5))
+plt.bar(monthly_rainfall.index, monthly_rainfall.values, width=15)
+plt.title("Monthly Rainfall Totals")
+plt.xlabel("Month")
+plt.ylabel("Total Rainfall")
+plt.xticks(rotation=45)
+plt.grid(True, axis="y")
+plt.show()
+
+# ------------------------------------------------------------
+# 3) SCATTER PLOT – Humidity vs Temperature
+# ------------------------------------------------------------
+plt.figure(figsize=(8, 5))
+plt.scatter(df["temperature"], df["humidity"], alpha=0.6)
+plt.title("Humidity vs Temperature")
+plt.xlabel("Temperature")
+plt.ylabel("Humidity")
+plt.grid(True)
+plt.show()
+
+# ------------------------------------------------------------
+# 4) COMBINED FIGURE – Temperature Line + Humidity Scatter
+# ------------------------------------------------------------
+fig, ax = plt.subplots(1, 2, figsize=(14, 5))
+
+# Subplot 1: Temperature trend
+ax[0].plot(df.index, df["temperature"], color="blue")
+ax[0].set_title("Daily Temperature")
+ax[0].set_xlabel("Date")
+ax[0].set_ylabel("Temperature")
+ax[0].grid(True)
+
+# Subplot 2: Humidity scatter
+ax[1].scatter(df["temperature"], df["humidity"], alpha=0.6, color="green")
+ax[1].set_title("Humidity vs Temperature")
+ax[1].set_xlabel("Temperature")
+ax[1].set_ylabel("Humidity")
+ax[1].grid(True)
+
+plt.tight_layout()
+plt.show()
