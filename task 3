@@ -1,0 +1,67 @@
+import numpy as np
+import pandas as pd
+
+# -------------------------------------------------------
+# Assume `clean_df` exists from Task 2.
+# Must contain a datetime column and numeric weather columns.
+# -------------------------------------------------------
+
+# Identify the datetime column
+date_col = [c for c in clean_df.columns if "date" in c.lower()][0]
+
+# Set the datetime column as index for resampling
+df2 = clean_df.copy()
+df2[date_col] = pd.to_datetime(df2[date_col], errors='coerce')
+df2 = df2.dropna(subset=[date_col])
+df2 = df2.set_index(date_col)
+
+
+# -------------------------------------------------------
+# 1) DAILY STATISTICS
+# -------------------------------------------------------
+daily_stats = df2.resample("D").agg(["mean", "min", "max", "std"])
+
+print("\n===== DAILY STATISTICS =====")
+print(daily_stats.head())
+
+
+# -------------------------------------------------------
+# 2) MONTHLY STATISTICS
+# -------------------------------------------------------
+monthly_stats = df2.resample("M").agg(["mean", "min", "max", "std"])
+
+print("\n===== MONTHLY STATISTICS =====")
+print(monthly_stats.head())
+
+
+# -------------------------------------------------------
+# 3) YEARLY STATISTICS
+# -------------------------------------------------------
+yearly_stats = df2.resample("Y").agg(["mean", "min", "max", "std"])
+
+print("\n===== YEARLY STATISTICS =====")
+print(yearly_stats.head())
+
+
+# -------------------------------------------------------
+# 4) NumPy Summary Statistics (overall)
+# -------------------------------------------------------
+numeric_cols = df2.select_dtypes(include=[np.number]).columns
+
+numpy_summary = {}
+
+for col in numeric_cols:
+    values = df2[col].dropna().values  # extract numeric array
+    numpy_summary[col] = {
+        "mean": np.mean(values),
+        "min": np.min(values),
+        "max": np.max(values),
+        "std": np.std(values),
+        "median": np.median(values)
+    }
+
+print("\n===== NUMPY SUMMARY (OVERALL) =====")
+for col, stats in numpy_summary.items():
+    print(f"\nColumn: {col}")
+    for stat_name, stat_val in stats.items():
+        print(f"  {stat_name}: {stat_val}")
